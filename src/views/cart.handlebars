@@ -1,0 +1,32 @@
+<h1>Carrito</h1>
+
+<table id="cart-list">
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>ID</th>
+      <th>Precio</th>
+      <th>Cantidad</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each cart.products}}
+    <tr>
+      <td>{{this.title}}</td>
+      <td>{{this.productId}}</td>
+      <td>{{this.price}}</td>
+      <td>{{this.quantity}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>Precio total: {{cart.totalPrice}}</p>
+
+<hr>
+<footer>
+  <form action="/api/carts/{{user.cartID}}/purchase" method="POST">
+    <button type="submit" role="button">Finalizar compra</button>
+  </form>
+  <a href="/api/products" role="button">Ver productos</a>
+</footer>
