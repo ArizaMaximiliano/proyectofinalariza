@@ -5,11 +5,14 @@ import { generateProductError } from '../services/errors/causesMessageErrors.js'
 import EnumsError from '../services/errors/enumErrors.js';
 
 import { logger } from '../config/logger.js';
-import { isAdmin, isPremium, isUser } from '../middlewares/auth.js';
+import userModel from '../dao/models/userModel.js';
+import MailService from '../services/mailService.js';
 
 export default class ProductController {
   constructor() {
     this.productService = new ProductService();
+    this.mailService = new MailService();
+    
   }
 
   async findAll(req, res) {
@@ -27,8 +30,8 @@ export default class ProductController {
   async getProductsPaginated(req, res) {
     try {
       const { page = 1, limit = 5, category, availability, sort, query } = req.query;
-      const criteria = {};
 
+      const criteria = {};
       if (query) {
         criteria.$text = { $search: query };
       } else {
@@ -43,7 +46,8 @@ export default class ProductController {
       const options = { page, limit, sort: { price: sort === 'desc' ? -1 : 1 } };
       const result = await this.productService.getProductsPaginated(criteria, options);
 
-      const response = this.buildResponse(result, req);
+      const response = result;
+
       res.render('products', {
         title: 'Productos',
         products: response,
@@ -52,43 +56,10 @@ export default class ProductController {
         isPremium: req.session.user.role === 'premium' || req.session.user.role === 'admin',
         isUser: req.session.user.role === 'usuario' || req.session.user.role === 'premium',
       });
-
     } catch (error) {
       logger.error(error);
       res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
-  }
-
-  buildResponse(data, req) {
-    return {
-      status: 'success',
-      payload: data.docs.map(product => product.toJSON()),
-      totalPages: data.totalPages,
-      prevPage: data.prevPage,
-      nextPage: data.nextPage,
-      page: data.page,
-      hasPrevPage: data.hasPrevPage,
-      hasNextPage: data.hasNextPage,
-      prevLink: data.hasPrevPage
-        ? this.buildPaginationLink(req, data.prevPage)
-        : null,
-      nextLink: data.hasNextPage
-        ? this.buildPaginationLink(req, data.nextPage)
-        : null,
-    };
-  }
-
-  buildPaginationLink(req, page) {
-    const { limit = 5, category, availability, sort } = req.query;
-    const baseUrl = 'http://localhost:8080/api/products';
-    const params = new URLSearchParams({
-      limit,
-      page,
-      ...(category && { category }),
-      ...(availability !== undefined && { availability }),
-      ...(sort && { sort }),
-    });
-    return `${baseUrl}?${params.toString()}`;
   }
 
 
@@ -115,9 +86,9 @@ export default class ProductController {
         });
       }
 
-      if (isAdmin(req) || isPremium(req)) {
+      if (req.user.role == 'admin' || req.user.role == 'premium') {
         if (!body.owner) {
-          body.owner = isAdmin(req) ? 'admin' : req.session.user._id;
+          body.owner = (req.user.role == 'admin') ? 'admin' : req.session.user._id;
         }
 
         const addedProduct = await this.productService.create(body);
@@ -142,11 +113,10 @@ export default class ProductController {
     }
   }
 
-  async deleteById(req, res) {
+  async deleteProduct(req, res) {
     try {
-      const { params: { pid } } = req;
-
-      const product = await this.productService.findById(pid);
+      const product = await this.productService.findById(req.params.pid);
+  
       if (!product) {
         CustomError.createError({
           name: 'Error al eliminar producto',
@@ -156,21 +126,31 @@ export default class ProductController {
         });
       }
   
-      if (isPremium(req) && product.owner !== req.session.user._id) {
-        CustomError.createError({
-          name: 'Error al eliminar producto',
-          cause: 'No tienes permisos para eliminar este producto',
-          message: 'No tienes permisos para eliminar este producto',
-          code: EnumsError.FORBIDDEN_ERROR,
-        });
+      if(req.user.role !== 'admin'){
+        const owner = await userModel.findById(product.owner);
+  
+        if (!owner) {
+          CustomError.createError({
+            name: 'Error al eliminar producto',
+            cause: 'No se encontro al propietario',
+            message: 'No se encontro al propietario',
+            code: EnumsError.FORBIDDEN_ERROR,
+          });
+        }
+    
+        if (owner.role === 'premium') {
+          await this.mailService.sendProductDeletedEmail(owner.email, product.title);
+        }
       }
+  
+      await this.productService.deleteById(product._id);
       
-      await this.productService.deleteById(pid);
       logger.info("Producto eliminado");
       res.status(204).end();
     } catch (error) {
-      logger.error(error);
-      res.status(error.statusCode || 500).json({ message: error.message });
+      console.error('Error al eliminar producto:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
     }
   }
+  
 }

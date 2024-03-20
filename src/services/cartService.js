@@ -1,12 +1,14 @@
 import { cartRepository } from '../repositories/index.js';
 import ProductService from '../services/productService.js';
 import TicketService from '../services/ticketService.js';
+import MailService from '../services/mailService.js';
 import { logger } from '../config/logger.js';
 
 export default class CartService {
   constructor() {
     this.productService = new ProductService();
     this.ticketService = new TicketService();
+    this.mailService = new MailService();
   }
 
   async createCart() {
@@ -143,6 +145,8 @@ export default class CartService {
       //monto total, productos restantes
       const remainingTotalPrice = cart.products.reduce((total, product) => total + (product.price * product.quantity), 0);
       await cartRepository.updateById(cid, { products: cart.products, totalPrice: remainingTotalPrice });
+
+      await this.mailService.sendPurchaseConfirmationEmail(user.email, ticket);
 
       //resultado
       if (failedPurchases.length > 0) {

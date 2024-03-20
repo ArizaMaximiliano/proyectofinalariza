@@ -1,98 +1,140 @@
-<h1>Productos</h1>
+<nav>
+    <ul>
+        <li><strong>Mi ecommerce</strong></li>
+    </ul>
+    <ul>
+        <a href="/api/carts/{{user.cartID}}" role="button" class="secondary">Ver carrito</a>
+    </ul>
+</nav>
+
+<hr>
 
 {{#if user}}
 <p>Bienvenido {{user.role}}, {{user.firstName}} {{user.lastName}} ({{user.email}})</p>
 {{/if}}
 
+<aside>
+    <nav>
+        <ul class="grid">
+            {{#if isAdmin}}
+            <a href="/api/users" role="button" class="outline secondary">Administrar Usuarios</a>
+            {{/if}}
+            <a href="/api/current" role="button" class="outline secondary">Ver Usuario Actual</a>
+            <a href="/api/upload/{{user._id}}" role="button" class="outline secondary">Subir Archivo</a>
+            <a href="/api/users/premium/{{user._id}}" role="button" class="outline secondary">Cambiar Rol</a>
+        </ul>
+    </nav>
+</aside>
+
+<hr>
+
 {{#if isPremium}}
-<h2>Agregar producto</h2>
-<form action="/api/products" method="post">
-  <label for="title">Titulo:</label>
-  <input type="text" id="title" name="title" required><br>
+<div>
+    <details>
+        <summary>Agregar producto</summary>
+        <ul>
+            <form action="/api/products" method="post">
+                <label for="title">Titulo:</label>
+                <input type="text" id="title" name="title" required><br>
 
-  <label for="description">Descripcion:</label>
-  <textarea id="description" name="description" required></textarea><br>
+                <label for="description">Descripcion:</label>
+                <textarea id="description" name="description" required></textarea><br>
 
-  <label for="code">Codigo:</label>
-  <input type="text" id="code" name="code" required><br>
+                <label for="code">Codigo:</label>
+                <input type="text" id="code" name="code" required><br>
 
-  <label for="price">Precio:</label>
-  <input type="number" id="price" name="price" required><br>
+                <label for="price">Precio:</label>
+                <input type="number" id="price" name="price" required><br>
 
-  <label for="status">Estado:</label>
-  <select id="status" name="status" required>
-    <option value="disponible">Disponible</option>
-    <option value="no disponible">No Disponible</option>
-  </select><br>
+                <label for="status">Estado:</label>
+                <select id="status" name="status" required>
+                    <option value="disponible">Disponible</option>
+                    <option value="no disponible">No Disponible</option>
+                </select><br>
 
-  <label for="stock">Stock:</label>
-  <input type="number" id="stock" name="stock" required><br>
+                <label for="stock">Stock:</label>
+                <input type="number" id="stock" name="stock" required><br>
 
-  <label for="category">Categoria:</label>
-  <input type="text" id="category" name="category" required><br>
+                <label for="category">Categoria:</label>
+                <input type="text" id="category" name="category" required><br>
 
-  <label for="thumbnail">URL de la imagen:</label>
-  <input type="text" id="thumbnail" name="thumbnail" required><br>
+                <label for="thumbnail">URL de la imagen:</label>
+                <input type="text" id="thumbnail" name="thumbnail" required><br>
 
-  <button type="submit">Agregar Producto</button>
-</form>
+                <button type="submit">Agregar Producto</button>
+            </form>
+        </ul>
+    </details>
+</div>
 {{/if}}
 
 
+
+<h2>Productos</h2>
+
 <table id="product-list" role="grid">
-  <thead>
-    <tr>
-      <th>Producto</th>
-      <th>Descripcion</th>
-      <th>Precio</th>
-      <th>Stock</th>
-      <th>Categoria</th>
-      <th>Disponibilidad</th>
-      <th>Accion</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each products.payload}}
-    <!--Datos de los productos-->
-    <tr>
-      <td>{{this.title}}</td>
-      <td>{{this.description}}</td>
-      <td>${{this.price}}</td>
-      <td>{{this.stock}}</td>
-      <td>{{this.category}}</td>
-      <td>{{#if this.availability}}Disponible{{else}}Agotado{{/if}}</td>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Descripcion</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Categoria</th>
+            <th>Disponibilidad</th>
+            <th>Accion</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each products.payload}}
+        <!--Datos de los productos-->
+        <tr>
+            <td>{{this.title}}</td>
+            <td>{{this.description}}</td>
+            <td>${{this.price}}</td>
+            <td>{{this.stock}}</td>
+            <td>{{this.category}}</td>
+            <td>{{#if this.availability}}Disponible{{else}}Agotado{{/if}}</td>
 
-      {{#if ../isAdmin}}
-      <td>
-          <button type="submit">Eliminar Producto</button>
-          <!--Debo agregar logica para eliminar, no puedo desde handlebars-->
-      </td>
-      {{/if}}
+            {{#if ../isAdmin}}
+            <td>
+                <form action="/api/products/delete/{{this._id}}" method="post">
+                    <button type="submit">Eliminar Producto</button>
+                </form>
+            </td>
+            {{/if}}
 
-      {{#if ../isUser}}
-      <td>
-        <form action="/api/carts/{{../user.cartID}}/products/{{this._id}}" method="post">
-          <input type="hidden" name="quantity" value="1">
-          <button type="submit">Agregar al carrito</button>
-        </form>
-      </td>
-      {{/if}}
+            {{#if ../isUser}}
+            <td>
+                <form action="/api/carts/{{../user.cartID}}/products/{{this._id}}" method="post">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit">Agregar al carrito</button>
+                </form>
 
-    </tr>
-    {{/each}}
-  </tbody>
+                {{#if ../isPremium}}
+
+                <form action="/api/products/delete/{{this._id}}" method="post">
+                    <button type="submit">Eliminar Producto</button>
+                </form>
+
+                {{/if}}
+            </td>
+            {{/if}}
+
+        </tr>
+        {{/each}}
+    </tbody>
 </table>
-
-<a href="/api/carts/{{user.cartID}}" role="button">Ver carrito</a>
 
 <hr>
 
 <p>Pagina actual: {{products.page}}</p>
-<a href="{{products.prevLink}}" role="button" {{#unless products.hasPrevPage}}disabled{{/unless}}>Anterior</a>
-<a href="{{products.nextLink}}" role="button" {{#unless products.hasNextPage}}disabled{{/unless}}>Siguiente</a>
+<a href="{{products.prevLink}}" role="button" class="secondary" {{#unless
+    products.hasPrevPage}}disabled{{/unless}}>Anterior</a>
+<a href="{{products.nextLink}}" role="button" class="secondary" {{#unless
+    products.hasNextPage}}disabled{{/unless}}>Siguiente</a>
 
 <hr>
 
 <footer>
-  <a href="/api/sessions/logout" role="button">Cerrar sesion</a>
+    <a href="/api/sessions/logout" role="button" class="contrast">Cerrar sesion</a>
 </footer>

@@ -6,7 +6,10 @@ switch (config.persistence) {
     case 'mongodb':
         CartDao = (await import('./cartMongoDB.dao.js')).default;
         break;
+    case 'memory':
+        //CartDao = (await import('./memory')).default;
+        break;
     default:
-        CartDao = (await import('./ponerurl')).default;  //url de memory u otra
+        CartDao = (await import('./cartMongoDB.dao.js')).default;
         break;
 }

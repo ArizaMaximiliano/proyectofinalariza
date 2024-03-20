@@ -5,7 +5,6 @@ import TicketService from '../services/ticketService.js';
 import { CustomError } from '../services/errors/customError.js';
 import { generateCartError } from '../services/errors/causesMessageErrors.js';
 import EnumsError from '../services/errors/enumErrors.js';
-import { isPremium } from '../middlewares/auth.js';
 import { logger } from '../config/logger.js';
 
 export default class CartController {
@@ -60,10 +59,10 @@ export default class CartController {
         });
       }
 
-      if (isPremium(req) && product.owner === req.session.user._id) {
+      if ( product.owner === req.session.user._id) {
         CustomError.createError({
           name: 'Error al agregar producto al carrito',
-          cause: 'El usuario premium no puede agregar su propio producto al carrito',
+          cause: 'El usuario no puede agregar su propio producto al carrito',
           message: 'No se puede agregar el producto al carrito',
           code: EnumsError.FORBIDDEN_ERROR,
         });

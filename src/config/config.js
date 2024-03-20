@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default {
+  port: process.env.PORT || 8080,
   persistence: process.env.PERSISTENCE || 'mongodb',
   db: {
     mongodbUri: process.env.DB_URI,

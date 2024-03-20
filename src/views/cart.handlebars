@@ -21,12 +21,17 @@
   </tbody>
 </table>
 
-<p>Precio total: {{cart.totalPrice}}</p>
+<strong>Precio total: {{cart.totalPrice}}</strong>
 
 <hr>
-<footer>
-  <form action="/api/carts/{{user.cartID}}/purchase" method="POST">
-    <button type="submit" role="button">Finalizar compra</button>
-  </form>
-  <a href="/api/products" role="button">Ver productos</a>
-</footer>
+
+<form action="/api/carts/{{user.cartID}}/purchase" method="POST">
+  <button type="submit" role="button">Finalizar compra</button>
+  <small>
+    Se le enviara un mail con la informacion.
+  </small>
+</form>
+
+<hr>
+
+<a href="/api/products" role="button" class="contrast">Volver a productos</a>

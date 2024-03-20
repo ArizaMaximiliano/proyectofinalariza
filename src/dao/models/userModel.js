@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
-  cartID: {   //utilizo esto para obtener el id despues, creo que no es buena practica poner esta logica en el usuario pero es lo que se me ocurrio por el momento 
+  cartID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cart'
   },

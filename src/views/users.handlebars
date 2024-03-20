@@ -1,0 +1,43 @@
+<h1>Administrar usuarios</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo electronico</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each users}}
+        <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.email}}</td>
+            <td>{{this.role}}</td>
+            <td>
+                <form action="/api/users/{{this.id}}/update-role" method="POST">
+                    <select name="newRole">
+                        <option value="usuario">Usuario</option>
+                        <option value="premium">Premium</option>
+                    </select>
+                    <button type="submit">Actualizar Rol</button>
+                </form>
+                <form action="/api/users/{{this.id}}/delete" method="POST">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<form action="/api/users/delete" method="POST">
+    <button type="submit" class="secondary" >Eliminar usuarios inactivos</button>
+    <small>
+        Se borraran todos los usuarios inactivos (5 minutos)
+    </small>
+</form>
+
+<hr>
+
+<a href="/api/products" role="button" class="contrast">Volver a productos</a>

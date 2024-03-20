@@ -1,5 +1,5 @@
 import ProductRepository from './productRepository.js';
-import { ProductDao } from '../dao/factory.js';
+import { ProductDao } from '../dao/productFactory.js';
 
 import CartRepository from './cartRepository.js';
 import { CartDao } from '../dao/cartFactory.js';  

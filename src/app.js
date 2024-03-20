@@ -44,7 +44,7 @@ app.engine('handlebars', handlebars.engine())
 app.set('views', path.join(__dirname, './views'));
 app.set('view engine', 'handlebars');
 
-//Ruta para las vistas
+//Ruta index
 app.use('/', indexRouter);
 //Rutas para las API
 app.use('/api', productRouter);
